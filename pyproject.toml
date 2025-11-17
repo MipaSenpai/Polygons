@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "endstone-polygons"
+version = "1.0.0"
+
+dependencies = [
+    "endstone>=0.10.8"
+]
+
+authors = [
+    { name = "Mipa"}
+]
+
+description = "Polygons - a territory protection system for Endstone."
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["endstone", "plugin", "polygons"]
+
+[project.urls]
+Homepage = "https://github.com/MipaSenpai/Polygons"
+
+[project.entry-points."endstone"]
+polygons = "endstone_polygons:Polygons"
