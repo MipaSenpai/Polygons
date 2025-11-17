@@ -125,6 +125,12 @@ class CommandBuilder:
         self.__permissions.update(command.getPermissions())
         return self
     
+    def addMultiple(self, commands: list[Command]) -> Self:
+        for command in commands:
+            self.__commands[command.name] = command.toDict()
+            self.__permissions.update(command.getPermissions())
+        return self
+    
     @property
     def commands(self) -> dict[str, dict[str, Any]]:
         return self.__commands

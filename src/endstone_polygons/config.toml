@@ -1,0 +1,8 @@
+[forms]
+title = "§lPolygons"
+
+[forms.createPolygon]
+title = "test"
+
+[forms.menu]
+title = "test"
