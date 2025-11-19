@@ -11,7 +11,8 @@ class PolygonRepository:
     
     def createPolygon(self, name: str, owner: str, world: str,
                       centerX: int, centerY: int, centerZ: int,
-                      minX: float, minZ: float, maxX: float, maxZ: float,
+                      minX: float, minY: float, minZ: float, 
+                      maxX: float, maxY: float, maxZ: float,
                       canBreak: bool = False, canPlace: bool = False, 
                       canOpenChests: bool = False) -> Polygon:
         polygon = Polygon(
@@ -28,8 +29,10 @@ class PolygonRepository:
             centerY=centerY,
             centerZ=centerZ,
             minX=minX,
+            minY=minY,
             minZ=minZ,
             maxX=maxX,
+            maxY=maxY,
             maxZ=maxZ
         )
         self.session.add(coordinates)
@@ -110,8 +113,8 @@ class PolygonRepository:
         return True
     
     def updatePolygonCoordinates(self, polygonId: int, 
-                                 minX: float = None, minZ: float = None,
-                                 maxX: float = None, maxZ: float = None) -> bool:
+                                 minX: float = None, minY: float = None, minZ: float = None,
+                                 maxX: float = None, maxY: float = None, maxZ: float = None) -> bool:
         coords = self.session.query(PolygonCoordinates).filter(PolygonCoordinates.polygonId == polygonId).first()
         
         if not coords:
@@ -119,10 +122,14 @@ class PolygonRepository:
         
         if minX is not None:
             coords.minX = minX
+        if minY is not None:
+            coords.minY = minY
         if minZ is not None:
             coords.minZ = minZ
         if maxX is not None:
             coords.maxX = maxX
+        if maxY is not None:
+            coords.maxY = maxY
         if maxZ is not None:
             coords.maxZ = maxZ
         

@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import String, Integer, Float, DateTime, ForeignKey, Boolean
+from sqlalchemy import String, Integer, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -12,9 +12,9 @@ class Polygon(Base):
     __tablename__ = "polygons"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
-    owner: Mapped[str] = mapped_column(String(100), nullable=False)
-    world: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    owner: Mapped[str] = mapped_column(String, nullable=False)
+    world: Mapped[str] = mapped_column(String, nullable=False)
     
     createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -41,10 +41,12 @@ class PolygonCoordinates(Base):
         Integer, ForeignKey("polygons.id"), nullable=False, unique=True
     )
     
-    minX: Mapped[float] = mapped_column(Float, nullable=False)
-    minZ: Mapped[float] = mapped_column(Float, nullable=False)
-    maxX: Mapped[float] = mapped_column(Float, nullable=False)
-    maxZ: Mapped[float] = mapped_column(Float, nullable=False)
+    minX: Mapped[int] = mapped_column(Integer, nullable=False)
+    minY: Mapped[int] = mapped_column(Integer, nullable=False)
+    minZ: Mapped[int] = mapped_column(Integer, nullable=False)
+    maxX: Mapped[int] = mapped_column(Integer, nullable=False)
+    maxY: Mapped[int] = mapped_column(Integer, nullable=False)
+    maxZ: Mapped[int] = mapped_column(Integer, nullable=False)
     
     centerX: Mapped[int] = mapped_column(Integer, nullable=False)
     centerY: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -84,7 +86,7 @@ class PolygonMember(Base):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     polygonId: Mapped[int] = mapped_column(Integer, ForeignKey("polygons.id"), nullable=False)
-    playerName: Mapped[str] = mapped_column(String(100), nullable=False)
+    playerName: Mapped[str] = mapped_column(String, nullable=False)
     
     addedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     
