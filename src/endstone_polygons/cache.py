@@ -1,10 +1,10 @@
 from rtree import index
 from typing import Optional
 
+from endstone import Logger
+
 from .database.models import Polygon
 from .database.repository import PolygonRepository
-
-from endstone import Logger
 
 
 class PolygonCache:
@@ -40,7 +40,7 @@ class PolygonCache:
         self.logger.info(f"Loaded {len(self.polygons)} polygons")
         self.loaded = True
     
-    def findPolygonAtPosition(self, world: str, x: float, z: float) -> Optional[Polygon]:
+    def findPolygonAtPosition(self, world: str, x: float, z: float, y: float) -> Optional[Polygon]:
         candidates = list(self.spatialIndex.intersection((x, z, x, z)))
         for polygonId in candidates:
             polygon = self.polygons.get(polygonId)
@@ -50,6 +50,10 @@ class PolygonCache:
 
                 if (coords.minX <= x <= coords.maxX and 
                     coords.minZ <= z <= coords.maxZ):
+                    
+                    if y is not None and (y < coords.minY or y > coords.maxY):
+                        continue
+                    
                     return polygon
         
         return None
