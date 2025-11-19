@@ -7,7 +7,11 @@ name = "endstone-polygons"
 version = "1.0.0"
 
 dependencies = [
-    "endstone>=0.10.8"
+    "endstone>=0.10.8",
+    "sqlalchemy>=2.0.0",
+    "rtree>=1.0.0",
+    "pymysql>=1.1.0",
+    "psycopg2-binary>=2.9.0"
 ]
 
 authors = [
