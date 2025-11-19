@@ -41,23 +41,32 @@ class Polygons(Plugin):
         self.save_default_config()
         self.register_events(self)
         
+        self._messages: dict = self.config.get("messages")
+        self._polygonTypes: dict = self.config.get("polygonTypes")
+        
         dbPath = str(self.data_folder / "polygons.db")
-        self.dbEngine = DatabaseEngine(dbPath)
-        self.dbEngine.createTables()
-        self.logger.info(f"Database initialized at {dbPath}")
+        self._dbEngine = DatabaseEngine(self.config, dbPath)
+        self._dbEngine.createTables()
         
-        self.cache = PolygonCache(self.logger)
+        dbType = self.config.get("database").get("type")
+        if dbType == "sqlite":
+            self.logger.info(f"Database initialized (SQLite) at {dbPath}")
+        else:
+            self.logger.info(f"Database initialized ({dbType.upper()})")
         
-        session = self.dbEngine.getSession()
+        self._cache = PolygonCache(self.logger)
+        
+        session = self._dbEngine.getSession()
         repository = PolygonRepository(session)
-        self.cache.loadFromDatabase(repository)
+
+        self._cache.loadFromDatabase(repository)
         session.close()
 
         self.get_command("polygon").executor = PolygonCommand(self)
 
     def on_disable(self) -> None:
         if hasattr(self, 'dbEngine'):
-            self.dbEngine.close()
+            self._dbEngine.close()
 
         self.logger.info("pg disable")
     
@@ -67,26 +76,26 @@ class Polygons(Plugin):
         block = event.block_placed_state
         location = block.location
         
-        if block.type == "minecraft:diamond_block":
-            existingPolygon = self.cache.findPolygonAtPosition(location.dimension.name, location.x, location.z)
-            
+        if block.type in self._polygonTypes.keys():
+            existingPolygon = self._cache.findPolygonAtPosition(location.dimension.name, location.x, location.z, location.y)
             if existingPolygon:
-                if not self.cache.canPlace(existingPolygon, player.name):
+                if not self._cache.canPlace(existingPolygon, player.name):
                     event.is_cancelled = True
-                    player.send_error_message(f"§cВы не можете строить в полигоне '{existingPolygon.name}'")
+                    player.send_error_message(self._messages.get("cannotBuild").format(name=existingPolygon.name)) # popup hz
                     return
             
             else:
-                createForm = CreatePolygonForm(self.config,self.dbEngine,self.cache,location)
+                createForm = CreatePolygonForm(
+                    self, self._dbEngine, self._cache, self.config, location, self._polygonTypes.get(block.type)
+                )
                 player.send_form(createForm.form)
                 return
         
-        polygon = self.cache.findPolygonAtPosition(location.dimension.name, location.x, location.z)
-
+        polygon = self._cache.findPolygonAtPosition(location.dimension.name, location.x, location.z, location.y)
         if polygon:
-            if not self.cache.canPlace(polygon, player.name):
+            if not self._cache.canPlace(polygon, player.name):
                 event.is_cancelled = True
-                player.send_error_message(f"§cВы не можете строить в полигоне '{polygon.name}'")
+                player.send_error_message(self._messages.get("cannotBuild").format(name=polygon.name))
                 return
 
     @event_handler(priority=EventPriority.HIGHEST)
@@ -95,29 +104,29 @@ class Polygons(Plugin):
         player = event.player
         location = block.location
         
-        polygon = self.cache.findPolygonAtPosition(location.dimension.name, location.x, location.z)
+        polygon = self._cache.findPolygonAtPosition(location.dimension.name, location.x, location.z, location.y)
         if polygon:
             if (polygon.coordinates and
-                block.type == "minecraft:diamond_block" and
+                block.type in self._polygonTypes.keys() and
                 int(location.x) == polygon.coordinates.centerX and
                 int(location.y) == polygon.coordinates.centerY and
                 int(location.z) == polygon.coordinates.centerZ):
                 
-                if not self.cache.isOwner(polygon.id, player.name):
+                if not self._cache.isOwner(polygon.id, player.name):
                     event.is_cancelled = True
-                    player.send_error_message(f"§cТолько владелец может удалить основной блок полигона '{polygon.name}'")
+                    player.send_error_message(self._messages.get("onlyOwnerCanDelete").format(name=polygon.name))
                     return
                 
-                session = self.dbEngine.getSession()
+                session = self._dbEngine.getSession()
                 repository = PolygonRepository(session)
                 repository.deletePolygon(polygon.id)
                 session.close()
                 
-                self.cache.removePolygon(polygon.id)
-                player.send_message(f"§aПолигон '{polygon.name}' удален")
+                self._cache.removePolygon(polygon.id)
+                player.send_message(self._messages.get("polygonDeleted").format(name=polygon.name))
                 return
             
-            if not self.cache.canBreak(polygon, player.name):
+            if not self._cache.canBreak(polygon, player.name):
                 event.is_cancelled = True
-                player.send_error_message(f"§cВы не можете ломать блоки в полигоне '{polygon.name}'")
+                player.send_error_message(self._messages.get("cannotBreak").format(name=polygon.name))
                 return

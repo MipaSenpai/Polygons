@@ -1,8 +1,48 @@
+visualBorder = true
+
+[polygonTypes]
+"minecraft:diamond_block" = 7
+"minecraft:stone" = 9
+
+[database]
+type = "sqlite" # "sqlite", "mysql", "postgresql"
+
+[database.sqlite]
+filename = "polygons.db"
+
+[database.mysql]
+host = "localhost"
+port = 3306
+username = "root"
+password = "password"
+database = "polygons"
+
+[database.postgresql]
+host = "localhost"
+port = 5432
+username = "postgres"
+password = "password"
+database = "polygons"
+
 [forms]
 title = "§lPolygons"
 
 [forms.createPolygon]
-title = "test"
+labelUp = "Создание нового полигона"
+labelDown = "Нужно придумать сюда текст"
+input = "Введите имя полигона"
+inputPlaceholder = "Мой полигон"
 
-[forms.menu]
-title = "test"
+
+[messages]
+existName = "Полигон с именем '{name}' уже существует"
+
+create = "Полигон '{name}' успешно создан"
+cancelCreate = "Создание полигона отменено:"
+
+notName = "Ошибка: Введите имя полигона"
+
+cannotBuild = "Вы не можете строить в полигоне '{name}'"
+cannotBreak = "Вы не можете ломать блоки в полигоне '{name}'"
+onlyOwnerCanDelete = "Только владелец может удалить основной блок полигона '{name}'"
+polygonDeleted = "Полигон '{name}' удален"
