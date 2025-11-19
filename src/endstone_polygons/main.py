@@ -71,7 +71,7 @@ class Polygons(Plugin):
         self.logger.info("pg disable")
     
     @event_handler(priority=EventPriority.HIGHEST)
-    def placeBlock(self, event: BlockPlaceEvent):
+    def placeBlock(self, event: BlockPlaceEvent): # проверка пересечения полигонов
         player = event.player
         block = event.block_placed_state
         location = block.location
