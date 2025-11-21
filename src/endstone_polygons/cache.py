@@ -1,10 +1,12 @@
 from rtree import index
 from typing import Optional
+from datetime import datetime
 
 from endstone import Logger
 
 from .database.models import Polygon
 from .database.repository import PolygonRepository
+from .database.models import PolygonMember
 
 
 class PolygonCache:
@@ -22,6 +24,10 @@ class PolygonCache:
         
         polygons = repository.getAllPolygons()
         for polygon in polygons:
+            _ = polygon.coordinates
+            _ = polygon.flags
+            _ = polygon.members
+            
             repository.session.expunge(polygon)
             
             self.polygons[polygon.id] = polygon
@@ -60,6 +66,7 @@ class PolygonCache:
     
     def addPolygon(self, polygon: Polygon, session=None):
         coords = polygon.coordinates
+        _ = polygon.flags
         membersList = list(polygon.members)
         
         if session:
@@ -106,10 +113,24 @@ class PolygonCache:
     def addMember(self, polygonId: int, playerName: str):
         memberKey = (polygonId, playerName)
         self.members[memberKey] = True
+        
+        polygon = self.polygons.get(polygonId)
+        if polygon:
+            newMember = PolygonMember(
+                id=0,
+                polygonId=polygonId,
+                playerName=playerName,
+                addedAt=datetime.utcnow()
+            )
+            polygon.members.append(newMember)
     
     def removeMember(self, polygonId: int, playerName: str):
         memberKey = (polygonId, playerName)
         self.members.pop(memberKey, None)
+        
+        polygon = self.polygons.get(polygonId)
+        if polygon and polygon.members:
+            polygon.members = [m for m in polygon.members if m.playerName != playerName]
     
     def isMember(self, polygonId: int, playerName: str) -> bool:
         memberKey = (polygonId, playerName)
@@ -118,6 +139,9 @@ class PolygonCache:
     def isOwner(self, polygonId: int, playerName: str) -> bool:
         polygon = self.polygons.get(polygonId)
         return polygon and polygon.owner == playerName
+    
+    def getPolygonsByOwner(self, owner: str) -> list[Polygon]:
+        return [polygon for polygon in self.polygons.values() if polygon.owner == owner]
     
     def canBreak(self, polygon: Polygon, playerName: str) -> bool:
         if polygon.owner == playerName:
@@ -145,3 +169,22 @@ class PolygonCache:
             return True
         
         return polygon.flags.canOpenChests if polygon.flags else False
+    
+    def checkIntersection(self, world: str, minX: int, minY: int, minZ: int, 
+                         maxX: int, maxY: int, maxZ: int) -> Optional[Polygon]:
+        candidates = list(self.spatialIndex.intersection((minX, minZ, maxX, maxZ)))
+        
+        for polygonId in candidates:
+            polygon = self.polygons.get(polygonId)
+            
+            if polygon and polygon.world == world and polygon.coordinates:
+                coords = polygon.coordinates
+                
+                xOverlap = not (maxX < coords.minX or minX > coords.maxX)
+                yOverlap = not (maxY < coords.minY or minY > coords.maxY)
+                zOverlap = not (maxZ < coords.minZ or minZ > coords.maxZ)
+                
+                if xOverlap and yOverlap and zOverlap:
+                    return polygon
+        
+        return None
