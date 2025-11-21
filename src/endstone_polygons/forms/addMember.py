@@ -28,7 +28,8 @@ class AddMemberForm(BasePolygonForm):
     
     def _onSubmit(self, player: Player, buttonIndex: int) -> None:
         onlinePlayers = [p for p in player.server.online_players 
-                        if not self._cache.isMember(self._polygon.id, p.name)]
+                        if p.name != self._polygon.owner 
+                        and not self._cache.isMember(self._polygon.id, p.name)]
         
         if buttonIndex != 0:
             selectedPlayer = onlinePlayers[buttonIndex - 1]
@@ -40,22 +41,33 @@ class AddMemberForm(BasePolygonForm):
             
             self._cache.addMember(self._polygon.id, playerName)
             
-            player.send_message(f"§aИгрок §e{playerName}§a добавлен в полигон §e{self._polygon.name}")
+            player.play_sound(player.location, "note.pling")
+            player.send_toast(
+                self._messages.get("title"),
+                self._messages.get("memberAdded").format(player=playerName, name=self._polygon.name)
+            )
         
+        else:
+            player.play_sound(player.location, "random.pop")
+
         from .control import ControlPolygonForm
         player.send_form(ControlPolygonForm(self._cache, self._dbEngine, self._config, self._player, self._polygon).buildForm())
 
-    def _onClose(self, player: Player) -> None: pass
+    def _onClose(self, player: Player) -> None:
+        player.play_sound(player.location, "random.pop")
 
     def buildForm(self) -> ActionForm:
         onlinePlayers = [p for p in self._player.server.online_players 
-                        if not self._cache.isMember(self._polygon.id, p.name)]
+                        if p.name != self._polygon.owner 
+                        and not self._cache.isMember(self._polygon.id, p.name)]
     
+        content = self._textForms.get("addMember").get("content") if onlinePlayers else self._textForms.get("addMember").get("contentEmpty")
+        
         form = ActionForm(
-            title=f"Добавить игрока: {self._polygon.name}",
-            content="Выберите игрока для добавления в полигон:" if onlinePlayers else "§cНет доступных игроков для добавления",
+            title=self._textForms.get("addMember").get("title").format(name=self._polygon.name),
+            content=content,
             buttons=[
-                Button("Вернуться"),
+                Button(self._textForms.get("addMember").get("buttonBack")),
                 Divider()
             ],
             on_submit=self._onSubmit,

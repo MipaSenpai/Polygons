@@ -25,34 +25,23 @@ class MenuPolygonForm(BasePolygonForm):
     
     def _onSubmit(self, player: Player, data: str) -> None:
         formData = int(data)
-
+        player.play_sound(player.location, "random.pop")
+        
         if formData == 0:
             from .info import InfoPolygonForm
-
-            infoForm = InfoPolygonForm(self._cache, self._dbEngine, self._config, self._player).buildForm()
-            player.send_form(infoForm)
-
+            player.send_form(InfoPolygonForm(self._cache, self._dbEngine, self._config, self._player).buildForm())
             return
         
         selectedPolygon = self._polygons[formData - 1]
             
         from .control import ControlPolygonForm
-
-        player.send_form(
-            ControlPolygonForm(
-                self._cache,
-                self._dbEngine,
-                self._config,
-                self._player,
-                selectedPolygon
-            ).buildForm()
-        )
+        player.send_form(ControlPolygonForm(self._cache, self._dbEngine, self._config, self._player, selectedPolygon).buildForm())
 
     def _onClose(self, player: Player) -> None:
-        print(player.name, "закрыл меню")
+        player.play_sound(player.location, "random.pop")
 
     def buildForm(self) -> ActionForm:
-        buttons = [Button("Информация")]
+        buttons = [Button(self._textForms.get("menu").get("buttonInfo"))]
         
         if self._polygons:
             buttons.append(Divider())
@@ -62,7 +51,7 @@ class MenuPolygonForm(BasePolygonForm):
         
         return ActionForm(
             title=self._title,
-            content=f"Количество полигонов: {len(self._polygons)}",
+            content=self._textForms.get("menu").get("content").format(count=len(self._polygons)),
             buttons=buttons,
             on_submit=self._onSubmit,
             on_close=self._onClose

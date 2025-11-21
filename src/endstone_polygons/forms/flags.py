@@ -4,7 +4,7 @@ from .base import BasePolygonForm
 
 from endstone import Player
 
-from endstone.form import ModalForm, Toggle
+from endstone.form import ModalForm, Toggle, Label
 
 from ..cache import PolygonCache
 from ..database.models import Polygon
@@ -31,9 +31,9 @@ class FlagsPolygonForm(BasePolygonForm):
     def _onSubmit(self, player: Player, data: str) -> None:
         formData = json.loads(data)
         
-        canBreak = formData[0]
-        canPlace = formData[1]
-        canOpenChests = formData[2]
+        canBreak = formData[1]
+        canPlace = formData[2]
+        canOpenChests = formData[3]
         
         with self._dbEngine as session:
             repo = PolygonRepository(session)
@@ -51,7 +51,11 @@ class FlagsPolygonForm(BasePolygonForm):
             canOpenChests=canOpenChests
         )
         
-        player.send_message(f"§aФлаги полигона §e{self._polygon.name}§a обновлены")
+        player.play_sound(player.location, "block.enchanting_table.use")
+        player.send_toast(
+            self._messages.get("title"),
+            self._messages.get("flagsUpdated").format(name=self._polygon.name)
+        )
         
         from .control import ControlPolygonForm
         player.send_form(ControlPolygonForm(self._cache, self._dbEngine, self._config, self._player, self._polygon).buildForm())
@@ -59,16 +63,18 @@ class FlagsPolygonForm(BasePolygonForm):
     def _onClose(self, player: Player) -> None:
         from .control import ControlPolygonForm
         player.send_form(ControlPolygonForm(self._cache, self._dbEngine, self._config, self._player, self._polygon).buildForm())
+        player.play_sound(player.location, "random.pop")
 
     def buildForm(self) -> ModalForm:
         flags = self._polygon.flags
         
         return ModalForm(
-            title=f"Флаги: {self._polygon.name}",
+            title=self._textForms.get("flags").get("title").format(name=self._polygon.name),
             controls=[
-                Toggle("Разрешить ломать блоки", flags.canBreak if flags else False),
-                Toggle("Разрешить ставить блоки", flags.canPlace if flags else False),
-                Toggle("Разрешить открывать сундуки", flags.canOpenChests if flags else False)
+                Label(self._textForms.get("flags").get("label").format(name=self._polygon.name)),
+                Toggle(self._textForms.get("flags").get("toggleBreak"), flags.canBreak if flags else False),
+                Toggle(self._textForms.get("flags").get("togglePlace"), flags.canPlace if flags else False),
+                Toggle(self._textForms.get("flags").get("toggleChests"), flags.canOpenChests if flags else False)
             ],
             on_submit=self._onSubmit,
             on_close=self._onClose

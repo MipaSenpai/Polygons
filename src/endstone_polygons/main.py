@@ -1,4 +1,5 @@
 from endstone.plugin import Plugin
+
 from endstone.event import (
     BlockPlaceEvent,
     BlockBreakEvent,
@@ -41,7 +42,7 @@ class Polygons(Plugin):
     permissions = commandBuilder.permissions
 
     def on_load(self) -> None:
-        self.logger.info("pg load")
+        self.logger.info("Polygons load")
 
     def on_enable(self) -> None:
         self.save_default_config()
@@ -74,7 +75,7 @@ class Polygons(Plugin):
         if hasattr(self, 'dbEngine'):
             self._dbEngine.close()
 
-        self.logger.info("pg disable")
+        self.logger.info("Polygons disabled")
     
     @event_handler(priority=EventPriority.HIGHEST)
     def placeBlock(self, event: BlockPlaceEvent):
@@ -87,7 +88,7 @@ class Polygons(Plugin):
             if existingPolygon:
                 if not self._cache.canPlace(existingPolygon, player.name):
                     event.is_cancelled = True
-                    player.send_error_message(self._messages.get("cannotBuild").format(name=existingPolygon.name)) # popup hz
+                    player.send_popup(self._messages.get("cannotBuild").format(name=existingPolygon.name))
                     return
             
             else:
@@ -102,7 +103,7 @@ class Polygons(Plugin):
                 
                 if intersecting:
                     event.is_cancelled = True
-                    player.send_error_message(f"Невозможно создать полигон! Пересечение с: {intersecting.name} (владелец: {intersecting.owner})")
+                    player.send_message(self._messages.get("cannotCreateIntersection").format(name=intersecting.name))
                     return
                 
                 createForm = CreatePolygonForm(self, self._dbEngine, self._cache, self.config, location, size)
@@ -114,7 +115,7 @@ class Polygons(Plugin):
         if polygon:
             if not self._cache.canPlace(polygon, player.name):
                 event.is_cancelled = True
-                player.send_error_message(self._messages.get("cannotBuild").format(name=polygon.name))
+                player.send_popup(self._messages.get("cannotBuild").format(name=polygon.name))
                 return
 
     @event_handler(priority=EventPriority.HIGHEST)
@@ -133,7 +134,7 @@ class Polygons(Plugin):
                 
                 if not self._cache.isOwner(polygon.id, player.name):
                     event.is_cancelled = True
-                    player.send_error_message(self._messages.get("onlyOwnerCanDelete").format(name=polygon.name))
+                    player.send_message(self._messages.get("onlyOwnerCanDelete").format(name=polygon.name))
                     return
                 
                 session = self._dbEngine.getSession()
@@ -143,11 +144,12 @@ class Polygons(Plugin):
                 
                 self._cache.removePolygon(polygon.id)
                 player.send_message(self._messages.get("polygonDeleted").format(name=polygon.name))
+                player.play_sound(player.location, "random.anvil_break")
                 return
             
             if not self._cache.canBreak(polygon, player.name):
                 event.is_cancelled = True
-                player.send_error_message(self._messages.get("cannotBreak").format(name=polygon.name))
+                player.send_popup(self._messages.get("cannotBreak").format(name=polygon.name))
                 return
             
     @event_handler()
@@ -167,8 +169,8 @@ class Polygons(Plugin):
                     if polygon:
                         if not self._cache.canOpenChests(polygon, player.name):
                             event.is_cancelled = True
-                            player.send_error_message(
-                                self._messages.get("cannotOpenChests", "§cВы не можете открывать контейнеры в полигоне: §e{name}").format(name=polygon.name)
+                            player.send_popup(
+                                self._messages.get("cannotOpenChests").format(name=polygon.name)
                             )
                             return
                         

@@ -1,9 +1,5 @@
 visualBorder = true
 
-[polygonTypes]
-"minecraft:diamond_block" = 7
-"minecraft:stone" = 9
-
 [database]
 type = "sqlite" # "sqlite", "mysql", "postgresql"
 
@@ -24,25 +20,113 @@ username = "postgres"
 password = "password"
 database = "polygons"
 
+[polygonTypes]
+"minecraft:diamond_block" = 7
+"minecraft:stone" = 9
+
 [forms]
-title = "§lPolygons"
+title = "Polygons"
+
+[forms.info]
+content = """What are polygons?
+
+Polygons are protected territories in the world where you can build and store your items safely.
+
+How to create a polygon:
+1. Place a special block (diamond block or stone)
+2. Fill out the form with the polygon name
+3. The polygon will be created around the block
+
+Polygon management:
+• Use /polygon command to open the menu
+• Add friends to your polygon
+• Configure flags (permissions)
+• Remove members when needed
+
+Polygon flags:
+• Break blocks - allow everyone to break
+• Place blocks - allow everyone to build
+• Open chests - access to containers
+
+Important: Only the owner can delete the main polygon block!"""
+button = "Back"
+
+[forms.menu]
+content = "Number of polygons: {count}"
+buttonInfo = "Information"
+
+[forms.control]
+title = "Management: {name}"
+content = """Polygon: {name}
+Owner: {owner}
+World: {world}
+Members: {membersCount}
+
+{members_list}Flags:
+  • Break: {canBreak}
+  • Place: {canPlace}
+  • Chests: {canOpenChests}"""
+buttonBack = "Back"
+buttonFlags = "Manage flags"
+buttonAddMember = "Add player"
+buttonRemoveMember = "Remove player"
+buttonDelete = "Delete polygon"
+
+[forms.flags]
+title = "Flags: {name}"
+label = "Here you can configure flags for your polygon: {name}"
+toggleBreak = "Allow breaking blocks"
+togglePlace = "Allow placing blocks"
+toggleChests = "Allow opening chests"
 
 [forms.createPolygon]
-labelUp = "Создание нового полигона"
-labelDown = "Нужно придумать сюда текст"
-input = "Введите имя полигона"
-inputPlaceholder = "Мой полигон"
+labelUp = "Creating a new polygon"
+labelDown = "Enter a unique name for your polygon"
+input = "Enter polygon name"
+inputPlaceholder = "My polygon"
+
+[forms.addMember]
+title = "Add player: {name}"
+content = "Select a player to add to the polygon:"
+contentEmpty = "No available players to add"
+buttonBack = "Back"
+
+[forms.removeMember]
+title = "Remove player: {name}"
+content = "Select a player to remove from polygon {name}:"
+contentEmpty = "No members in the polygon"
+buttonBack = "Back"
+
+[forms.delete]
+title = "Delete polygon: {name}"
+warning = """WARNING!
+
+You are about to delete polygon {name}
+World: {world}
+Members: {membersCount}
+
+This action is irreversible!"""
+toggle = "I confirm polygon deletion"
 
 
 [messages]
-existName = "Полигон с именем '{name}' уже существует"
+title = "Polygons"
+existName = "Polygon with name '{name}' already exists"
 
-create = "Полигон '{name}' успешно создан"
-cancelCreate = "Создание полигона отменено:"
+create = "Polygon '{name}' successfully created"
+cancelCreate = "Polygon creation cancelled"
 
-notName = "Ошибка: Введите имя полигона"
+notName = "Error: Enter polygon name"
 
-cannotBuild = "Вы не можете строить в полигоне '{name}'"
-cannotBreak = "Вы не можете ломать блоки в полигоне '{name}'"
-onlyOwnerCanDelete = "Только владелец может удалить основной блок полигона '{name}'"
-polygonDeleted = "Полигон '{name}' удален"
+cannotBuild = "You cannot build in polygon '{name}'"
+cannotBreak = "You cannot break blocks in polygon '{name}'"
+cannotOpenChests = "You cannot open containers in polygon: {name}"
+cannotCreateIntersection = "Cannot create polygon. Intersection with: {name}"
+onlyOwnerCanDelete = "Only the owner can delete the main block of polygon '{name}'"
+polygonDeleted = "Polygon '{name}' deleted"
+
+flagsUpdated = "Flags of polygon {name} updated"
+memberAdded = "Player {player} added to polygon {name}"
+memberRemoved = "Player {player} removed from polygon {name}"
+deleteCancelled = "Polygon deletion cancelled"
+deleteSuccess = "Polygon {name} successfully deleted"

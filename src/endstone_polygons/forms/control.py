@@ -26,6 +26,7 @@ class ControlPolygonForm(BasePolygonForm):
     
     def _onSubmit(self, player: Player, data: str) -> None:
         formData = int(data)
+        player.play_sound(player.location, "random.pop")
 
         match formData:
             case 0:
@@ -48,37 +49,43 @@ class ControlPolygonForm(BasePolygonForm):
                 from .delete import DeletePolygonForm
                 player.send_form(DeletePolygonForm(self._cache, self._dbEngine, self._config, self._player, self._polygon).buildForm())
 
-    def _onClose(self, player: Player) -> None: pass
+    def _onClose(self, player: Player) -> None:
+        player.play_sound(player.location, "random.pop")
 
     def buildForm(self) -> ActionForm:
         flags = self._polygon.flags
         members_count = len(self._polygon.members) if self._polygon.members else 0
         
-        content = f"Полигон: §e{self._polygon.name}§r\n"
-        content += f"Владелец: §e{self._polygon.owner}§r\n"
-        content += f"Мир: {self._polygon.world}\n"
-        content += f"Участников: {members_count}\n"
-        
+        membersList = ""
         if self._polygon.members and members_count > 0:
-            content += "\nУчастники:\n"
+            membersList = "\nMembers:\n"
+
             for member in self._polygon.members:
-                content += f"  §7• §f{member.playerName}§r\n"
+                membersList += f"  • {member.playerName}\n"
+
+            membersList += "\n"
         
-        content += "\nФлаги:\n"
-        content += f"  §7• §fЛомать: {'§aДа§r' if flags and flags.canBreak else '§cНет§r'}\n"
-        content += f"  §7• §fСтроить: {'§aДа§r' if flags and flags.canPlace else '§cНет§r'}\n"
-        content += f"  §7• §fСундуки: {'§aДа§r' if flags and flags.canOpenChests else '§cНет§r'}"
+        content = self._textForms.get("control").get("content").format(
+            name=self._polygon.name,
+            owner=self._polygon.owner,
+            world=self._polygon.world,
+            membersCount=members_count,
+            members_list=membersList,
+            canBreak="Yes" if flags and flags.canBreak else "No",
+            canPlace="Yes" if flags and flags.canPlace else "No",
+            canOpenChests="Yes" if flags and flags.canOpenChests else "No"
+        )
 
         return ActionForm(
-            title=f"Управление: {self._polygon.name}",
+            title=self._textForms.get("control").get("title").format(name=self._polygon.name),
             content=content,
             buttons=[
-                Button("Вернуться"),
+                Button(self._textForms.get("control").get("buttonBack")),
                 Divider(),
-                Button("Управление флагами"),
-                Button("Добавить игрока"),
-                Button("Удалить игрока"),
-                Button("Удалить полигон")
+                Button(self._textForms.get("control").get("buttonFlags")),
+                Button(self._textForms.get("control").get("buttonAddMember")),
+                Button(self._textForms.get("control").get("buttonRemoveMember")),
+                Button(self._textForms.get("control").get("buttonDelete"))
             ],
             on_submit=self._onSubmit,
             on_close=self._onClose

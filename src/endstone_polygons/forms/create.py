@@ -37,8 +37,12 @@ class CreatePolygonForm(BasePolygonForm):
         polygonName: str = formData[2]
         
         if not polygonName or polygonName.strip() == "":
-            player.send_message(self._messages.get("notName"))
+            player.send_toast(
+                self._messages.get("title"),
+                self._messages.get("notName")
+            )
             player.send_form(self.buildForm())
+            player.play_sound(player.location, "random.pop")
             return
         
         blockX, blockY, blockZ, minX, minY, minZ, maxX, maxY, maxZ = self._cache.calculatePolygonBounds(
@@ -52,7 +56,12 @@ class CreatePolygonForm(BasePolygonForm):
             existing = repo.getPolygonByName(polygonName)
 
             if existing:
-                player.send_message(self._messages.get("existName").format(name=polygonName)) # toast
+                player.send_toast(
+                    self._messages.get("title"),
+                    self._messages.get("existName").format(name=polygonName)
+                )
+                player.send_form(self.buildForm())
+                player.play_sound(player.location, "random.pop")
                 return
                         
             polygon = repo.createPolygon(
@@ -63,8 +72,12 @@ class CreatePolygonForm(BasePolygonForm):
             )
             
             self._cache.addPolygon(polygon, session)
-            
-        player.send_message(self._messages.get("create").format(name=polygonName))
+        
+        player.play_sound(player.location, "block.end_portal.spawn")
+        player.send_toast(
+            self._messages.get("title"),
+            self._messages.get("create").format(name=polygonName)
+        )
                 
         if self._config.get("visualBorder"):
             maxX, maxY, maxZ = maxX + 1, maxY + 1, maxZ + 1
@@ -95,7 +108,11 @@ class CreatePolygonForm(BasePolygonForm):
                 self._plugin.server.scheduler.run_task(self._plugin, visualBorder, delay=i * 40)
             
     def _onClose(self, player: Player) -> None:
-        player.send_message(self._messages.get("cancelCreate"))
+        player.play_sound(player.location, "random.anvil_break")
+        player.send_toast(
+            self._messages.get("title"),
+            self._messages.get("cancelCreate")
+        )
 
     def buildForm(self) -> ModalForm:
         return ModalForm(

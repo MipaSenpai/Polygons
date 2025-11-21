@@ -40,19 +40,29 @@ class RemoveMemberForm(BasePolygonForm):
             
             self._cache.removeMember(self._polygon.id, playerName)
 
-            player.send_message(f"§aИгрок §e{playerName}§a удален из полигона §e{self._polygon.name}")
+            player.play_sound(player.location, "random.pop")
+            player.send_toast(
+                self._messages.get("title"),
+                self._messages.get("memberRemoved").format(player=playerName, name=self._polygon.name)
+            )
+
+        else:
+            player.play_sound(player.location, "note.bass")
         
         from .control import ControlPolygonForm
         player.send_form(ControlPolygonForm(self._cache, self._dbEngine, self._config, self._player, self._polygon).buildForm())
 
-    def _onClose(self, player: Player) -> None: pass
+    def _onClose(self, player: Player) -> None:
+        player.play_sound(player.location, "random.pop")
 
     def buildForm(self) -> ActionForm:
+        content = self._textForms.get("removeMember").get("content").format(name=self._polygon.name) if self._members else self._textForms.get("removeMember").get("contentEmpty")
+        
         form = ActionForm(
-            title=f"Удалить игрока: {self._polygon.name}",
-            content=f"Выберите игрока для удаления из полигона {self._polygon.name}:" if self._members else "В полигоне нет добавленных игроков",
+            title=self._textForms.get("removeMember").get("title").format(name=self._polygon.name),
+            content=content,
             buttons=[
-                Button("Вернуться"),
+                Button(self._textForms.get("removeMember").get("buttonBack")),
                 Divider()
             ],
             on_submit=self._onSubmit,

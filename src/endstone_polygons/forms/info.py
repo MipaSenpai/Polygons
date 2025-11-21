@@ -25,6 +25,7 @@ class InfoPolygonForm(BasePolygonForm):
         from .menu import MenuPolygonForm
 
         menu = MenuPolygonForm(self._cache, self._dbEngine, self._config, self._player).buildForm()
+        player.play_sound(player.location, "random.pop")
         player.send_form(menu)
 
     def _onClose(self, player: Player) -> None:
@@ -33,8 +34,8 @@ class InfoPolygonForm(BasePolygonForm):
     def buildForm(self) -> ActionForm:
         return ActionForm(
             title=self._title,
-            content="test", # TODO
-            buttons=[Button("Вернуться")],
+            content=self._textForms.get("info").get("content"),
+            buttons=[Button(self._textForms.get("info").get("button"))],
             on_submit=self._onSubmit,
             on_close=self._onClose
         )

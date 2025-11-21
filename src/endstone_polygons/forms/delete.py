@@ -33,7 +33,10 @@ class DeletePolygonForm(BasePolygonForm):
         confirmed = formData[1]
         
         if not confirmed:
-            player.send_message("§eУдаление полигона отменено")
+            player.send_toast(
+                self._messages.get("title"),
+                self._messages.get("deleteCancelled")
+            )
     
             from .control import ControlPolygonForm
             player.send_form(ControlPolygonForm(self._cache,self._dbEngine,self._config,self._player,self._polygon).buildForm())
@@ -46,7 +49,11 @@ class DeletePolygonForm(BasePolygonForm):
         
         self._cache.removePolygon(self._polygon.id)
         
-        player.send_message(f"§aПолигон §e{self._polygon.name}§a успешно удален")
+        player.play_sound(player.location, "note.bass")
+        player.send_toast(
+            self._messages.get("title"),
+            self._messages.get("deleteSuccess").format(name=self._polygon.name)
+        )
         
         from .menu import MenuPolygonForm
         player.send_form(MenuPolygonForm(self._cache, self._dbEngine, self._config, self._player).buildForm())
@@ -54,21 +61,22 @@ class DeletePolygonForm(BasePolygonForm):
     def _onClose(self, player: Player) -> None:
         from .control import ControlPolygonForm
         player.send_form(ControlPolygonForm(self._cache, self._dbEngine, self._config, self._player, self._polygon).buildForm())
+        player.play_sound(player.location, "random.pop")
 
     def buildForm(self) -> ModalForm:
         members_count = len(self._polygon.members) if self._polygon.members else 0
         
-        warning = f"ВНИМАНИЕ!§r\n\n"
-        warning += f"Вы собираетесь удалить полигон {self._polygon.name}\n"
-        warning += f"Мир: {self._polygon.world}\n"
-        warning += f"Участников: {members_count}\n\n"
-        warning += "Это действие необратимо!"
+        warning = self._textForms.get("delete").get("warning").format(
+            name=self._polygon.name,
+            world=self._polygon.world,
+            membersCount=members_count
+        )
         
         return ModalForm(
-            title=f"Удалить полигон: {self._polygon.name}",
+            title=self._textForms.get("delete").get("title").format(name=self._polygon.name),
             controls=[
                 Label(warning),
-                Toggle("Я подтверждаю удаление полигона", False)
+                Toggle(self._textForms.get("delete").get("toggle"), False)
             ],
             on_submit=self._onSubmit,
             on_close=self._onClose
