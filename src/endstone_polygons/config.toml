@@ -1,7 +1,8 @@
 visualBorder = true
 
+# Settings database
 [database]
-type = "sqlite" # "sqlite", "mysql", "postgresql"
+type = "sqlite" # Options: "sqlite", "mysql", "postgresql"
 
 [database.sqlite]
 filename = "polygons.db"
@@ -20,6 +21,7 @@ username = "postgres"
 password = "password"
 database = "polygons"
 
+# Settings polygons
 [polygonTypes]
 "minecraft:diamond_block" = 7
 "minecraft:stone" = 9
