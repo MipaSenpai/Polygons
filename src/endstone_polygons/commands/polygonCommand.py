@@ -12,7 +12,8 @@ class PolygonCommand(CommandExecutor):
         super().__init__()
         self.plugin = plugin
         self.config = plugin.config
-        self.menuForm = MenuPolygonForm(self.config)
+        self.cache = plugin._cache
+        self.dbEngine = plugin._dbEngine
 
     def on_command(self, sender: CommandSender, command: Command, args: List[str]) -> bool:
         if not isinstance(sender, Player):
@@ -20,4 +21,6 @@ class PolygonCommand(CommandExecutor):
             return
 
         player: Player = sender
-        player.send_form(self.menuForm.form)
+        
+        menuForm = MenuPolygonForm(self.cache, self.dbEngine, self.config, player)
+        player.send_form(menuForm.form)
