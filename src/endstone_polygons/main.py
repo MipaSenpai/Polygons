@@ -71,7 +71,7 @@ class Polygons(Plugin):
         self.logger.info("pg disable")
     
     @event_handler(priority=EventPriority.HIGHEST)
-    def placeBlock(self, event: BlockPlaceEvent): # проверка пересечения полигонов
+    def placeBlock(self, event: BlockPlaceEvent):
         player = event.player
         block = event.block_placed_state
         location = block.location
@@ -85,10 +85,32 @@ class Polygons(Plugin):
                     return
             
             else:
-                createForm = CreatePolygonForm(
-                    self, self._dbEngine, self._cache, self.config, location, self._polygonTypes.get(block.type)
+                size = self._polygonTypes.get(block.type)
+                radius = (size - 1) / 2
+                
+                blockX = int(location.x)
+                blockY = int(location.y)
+                blockZ = int(location.z)
+                
+                minX = int(blockX - radius)
+                minY = int(blockY - radius)
+                minZ = int(blockZ - radius)
+                maxX = int(blockX + radius)
+                maxY = int(blockY + radius)
+                maxZ = int(blockZ + radius)
+                
+                intersecting = self._cache.checkIntersection(
+                    location.dimension.name, minX, minY, minZ, maxX, maxY, maxZ
                 )
+                
+                if intersecting:
+                    event.is_cancelled = True
+                    player.send_error_message(f"Невозможно создать полигон! Пересечение с: {intersecting.name} (владелец: {intersecting.owner})")
+                    return
+                
+                createForm = CreatePolygonForm(self, self._dbEngine, self._cache, self.config, location, size)
                 player.send_form(createForm.form)
+                
                 return
         
         polygon = self._cache.findPolygonAtPosition(location.dimension.name, location.x, location.z, location.y)
