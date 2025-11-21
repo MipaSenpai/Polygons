@@ -1,45 +1,17 @@
 import json
 
-from abc import ABC, abstractmethod
+from .base import BasePolygonForm
 
 from endstone import Player
 from endstone.plugin import Plugin
 from endstone.level import Location
 
-from endstone.form import (
-    ActionForm,
-    ModalForm,
-    TextInput,
-    Label,
-    Divider,
-    Button
-)
+from endstone.form import ModalForm, TextInput, Label
 
 from ..cache import PolygonCache
 from ..database.engine import DatabaseEngine
 from ..database.repository import PolygonRepository
 
-
-class BasePolygonForm(ABC):
-    def __init__(self, config: dict):
-        self._config = config
-
-        self._textForms: dict = self._config.get("forms")
-        self._title: str = self._textForms.get("title")
-        self._messages: dict = self._config.get("messages")
-
-    @abstractmethod
-    def _onSubmit(self): pass
-    
-    @abstractmethod
-    def _onClose(self): pass
-
-    @abstractmethod
-    def _buildForm(self): pass
-
-    @property
-    def form(self): return self._buildForm()
-    
 
 class CreatePolygonForm(BasePolygonForm):
     def __init__(
@@ -66,7 +38,7 @@ class CreatePolygonForm(BasePolygonForm):
         
         if not polygonName or polygonName.strip() == "":
             player.send_message(self._messages.get("notName"))
-            player.send_form(self._buildForm())
+            player.send_form(self.buildForm())
             return
         
         radius = (self._size - 1) / 2
@@ -135,87 +107,13 @@ class CreatePolygonForm(BasePolygonForm):
     def _onClose(self, player: Player) -> None:
         player.send_message(self._messages.get("cancelCreate"))
 
-    def _buildForm(self) -> ModalForm:
+    def buildForm(self) -> ModalForm:
         return ModalForm(
             title=self._title,
             controls=[
                 Label(self._textForms.get("createPolygon").get("labelUp")),
                 Label(self._textForms.get("createPolygon").get("labelDown")),
                 TextInput(self._textForms.get("createPolygon").get("input"), self._textForms.get("createPolygon").get("inputPlaceholder"))
-            ],
-            on_submit=self._onSubmit,
-            on_close=self._onClose
-        )
-    
-
-class MenuPolygonForm(BasePolygonForm):
-    def _onSubmit(self, player: Player, data: str) -> None:
-        print(player.name, "открыл меню")
-        print(data) # String
-
-    def _onClose(self, player: Player) -> None:
-        print(player.name, "закрыл меню")
-
-    def _buildForm(self) -> ActionForm:
-        return ActionForm(
-            title=self._title,
-            content="test",
-            buttons=[
-                Button("Информация"), # ok
-                Divider(),
-                Button("1"),
-                Divider(),
-                Button("2"),
-                Divider(),
-                Button("3")
-            ],
-            on_submit=self._onSubmit,
-            on_close=self._onClose
-        )
-
-
-class InfoPolygonForm(BasePolygonForm):
-    def _onSubmit(self, player: Player, data: str) -> None:
-        print(player.name, "открыл меню")
-        print(data) # String
-
-    def _onClose(self, player: Player) -> None:
-        print(player.name, "закрыл меню")
-
-    def _buildForm(self) -> ActionForm:
-        textForm: dict = self._config.get("forms").get("menuPolygon")
-
-        return ActionForm(
-            title=self._title,
-            content="test",
-            buttons=[
-                Button("Вернуться")
-            ],
-            on_submit=self._onSubmit,
-            on_close=self._onClose
-        )
-
-
-class ControlPolygonForm(BasePolygonForm):
-    def _onSubmit(self, player: Player, data: str) -> None:
-        print(player.name, "открыл меню")
-        print(data) # String
-
-    def _onClose(self, player: Player) -> None:
-        print(player.name, "закрыл меню")
-
-    def _buildForm(self) -> ActionForm:
-        textForm: dict = self._config.get("forms").get("menuPolygon")
-
-        return ActionForm(
-            title=self._title,
-            content="test",
-            buttons=[
-                Button("Добавить игрока"),
-                Divider(),
-                Button("Удалить игрока"),
-                Divider(),
-                Button("Удалить полигон")
             ],
             on_submit=self._onSubmit,
             on_close=self._onClose
