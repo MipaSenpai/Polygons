@@ -224,5 +224,5 @@ This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for d
 ---
 
 <p align="center">
-  <sub>✨ Polygons - where performance meets simplicity. ✨</sub>
+  <sub>✨ Polygons - Abandon all hope, ye who enter here. ✨</sub>
 </p>
