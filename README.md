@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/MipaSenpai/Polygons/main/.github/images/icon.svg" width="120" alt="Polygons Logo">
+  <img src="https://raw.githubusercontent.com/MipaSenpai/Polygons/main/.github/images/logo.png" width="120" alt="Polygons Logo">
 </p>
 
 <h1 align="center">🛡️ Polygons</h1>
@@ -82,8 +82,7 @@ Restart your server. Done!
 
 ### Visual Borders
 
-To visualize polygon boundaries in-game, install the resource pack:  
-[LiteLoaderBDS-CUI v1.1](https://github.com/OEOTYAN/LiteLoaderBDS-CUI/releases/tag/v1.1)
+To visualize polygon boundaries in-game, install the [Resource pack](https://github.com/OEOTYAN/LiteLoaderBDS-CUI/releases/tag/v1.1).  
 
 ### Creating a Polygon
 
