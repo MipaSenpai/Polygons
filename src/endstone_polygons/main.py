@@ -1,5 +1,11 @@
 from endstone.plugin import Plugin
-from endstone.event import BlockPlaceEvent, BlockBreakEvent, event_handler, EventPriority
+from endstone.event import (
+    BlockPlaceEvent,
+    BlockBreakEvent,
+    EventPriority,
+    PlayerInteractEvent,
+    event_handler
+)
 
 from .cache import PolygonCache
 
@@ -86,18 +92,9 @@ class Polygons(Plugin):
             
             else:
                 size = self._polygonTypes.get(block.type)
-                radius = (size - 1) / 2
-                
-                blockX = int(location.x)
-                blockY = int(location.y)
-                blockZ = int(location.z)
-                
-                minX = int(blockX - radius)
-                minY = int(blockY - radius)
-                minZ = int(blockZ - radius)
-                maxX = int(blockX + radius)
-                maxY = int(blockY + radius)
-                maxZ = int(blockZ + radius)
+                _, _, _, minX, minY, minZ, maxX, maxY, maxZ = self._cache.calculatePolygonBounds(
+                    location.x, location.y, location.z, size
+                )
                 
                 intersecting = self._cache.checkIntersection(
                     location.dimension.name, minX, minY, minZ, maxX, maxY, maxZ
@@ -152,3 +149,28 @@ class Polygons(Plugin):
                 event.is_cancelled = True
                 player.send_error_message(self._messages.get("cannotBreak").format(name=polygon.name))
                 return
+            
+    @event_handler()
+    def openContainers(self, event: PlayerInteractEvent):
+        try:
+            player = event.player
+            block = event.block
+            location = block.location
+
+            containers = ["shulker_box", "chest", "barrel", "ender_chest"]
+            for container in containers:
+                if container in block.type:
+                    polygon = self._cache.findPolygonAtPosition(
+                        location.dimension.name, location.x, location.z, location.y
+                    )
+                    
+                    if polygon:
+                        if not self._cache.canOpenChests(polygon, player.name):
+                            event.is_cancelled = True
+                            player.send_error_message(
+                                self._messages.get("cannotOpenChests", "§cВы не можете открывать контейнеры в полигоне: §e{name}").format(name=polygon.name)
+                            )
+                            return
+                        
+        except:
+            return

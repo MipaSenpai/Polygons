@@ -41,19 +41,9 @@ class CreatePolygonForm(BasePolygonForm):
             player.send_form(self.buildForm())
             return
         
-        radius = (self._size - 1) / 2
-
-        blockX = int(self._location.x)
-        blockY = int(self._location.y)
-        blockZ = int(self._location.z)
-
-        minX = int(blockX - radius)
-        minY = int(blockY - radius)
-        minZ = int(blockZ - radius)
-
-        maxX = int(blockX + radius)
-        maxY = int(blockY + radius)
-        maxZ = int(blockZ + radius)
+        blockX, blockY, blockZ, minX, minY, minZ, maxX, maxY, maxZ = self._cache.calculatePolygonBounds(
+            self._location.x, self._location.y, self._location.z, self._size
+        )
         
         world = self._location.dimension.name
 

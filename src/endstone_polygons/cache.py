@@ -170,6 +170,22 @@ class PolygonCache:
         
         return polygon.flags.canOpenChests if polygon.flags else False
     
+    def calculatePolygonBounds(self, x: float, y: float, z: float, size: int) -> tuple:
+        radius = (size - 1) / 2
+        
+        blockX = int(x)
+        blockY = int(y)
+        blockZ = int(z)
+        
+        minX = int(blockX - radius)
+        minY = int(blockY - radius)
+        minZ = int(blockZ - radius)
+        maxX = int(blockX + radius)
+        maxY = int(blockY + radius)
+        maxZ = int(blockZ + radius)
+        
+        return (blockX, blockY, blockZ, minX, minY, minZ, maxX, maxY, maxZ)
+    
     def checkIntersection(self, world: str, minX: int, minY: int, minZ: int, 
                          maxX: int, maxY: int, maxZ: int) -> Optional[Polygon]:
         candidates = list(self.spatialIndex.intersection((minX, minZ, maxX, maxZ)))
