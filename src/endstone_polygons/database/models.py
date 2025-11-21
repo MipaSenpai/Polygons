@@ -69,11 +69,6 @@ class PolygonFlags(Base):
     canBreak: Mapped[bool] = mapped_column(Boolean, default=False)
     canPlace: Mapped[bool] = mapped_column(Boolean, default=False)
     canOpenChests: Mapped[bool] = mapped_column(Boolean, default=False)
-    
-    pvpEnabled: Mapped[bool] = mapped_column(Boolean, default=True)
-    mobSpawning: Mapped[bool] = mapped_column(Boolean, default=True)
-    fireSpread: Mapped[bool] = mapped_column(Boolean, default=False)
-    explosions: Mapped[bool] = mapped_column(Boolean, default=False)
 
     polygon: Mapped["Polygon"] = relationship("Polygon", back_populates="flags")
     
