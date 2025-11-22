@@ -103,9 +103,13 @@ class CreatePolygonForm(BasePolygonForm):
                     player.spawn_particle("ll:pointP1", minX, y, maxZ)
                     player.spawn_particle("ll:pointP1", maxX, y, maxZ)
 
-            visualBorder()
-            for i in range(1, 11):
-                self._plugin.server.scheduler.run_task(self._plugin, visualBorder, delay=i * 40)
+            try:
+                visualBorder()
+                for i in range(1, 11):
+                    self._plugin.server.scheduler.run_task(self._plugin, visualBorder, delay=i * 40)
+                
+            except:
+                return
             
     def _onClose(self, player: Player) -> None:
         player.play_sound(player.location, "random.anvil_break")
