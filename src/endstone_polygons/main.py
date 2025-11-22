@@ -136,7 +136,7 @@ class Polygons(Plugin):
                 
                 if not self._cache.isOwner(polygon.id, player.name):
                     event.is_cancelled = True
-                    player.send_message(self._messages.get("onlyOwnerCanDelete").format(name=polygon.name))
+                    player.send_popup(self._messages.get("onlyOwnerCanDelete").format(name=polygon.name))
                     return
                 
                 session = self._dbEngine.getSession()
@@ -145,8 +145,12 @@ class Polygons(Plugin):
                 session.close()
                 
                 self._cache.removePolygon(polygon.id)
-                player.send_message(self._messages.get("polygonDeleted").format(name=polygon.name))
+                
                 player.play_sound(player.location, "random.anvil_break")
+                player.send_toast(
+                    self._messages.get("title"),
+                    self._messages.get("polygonDeleted").format(name=polygon.name)
+                )
                 return
             
             if not self._cache.canBreak(polygon, player.name):
